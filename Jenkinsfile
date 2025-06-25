@@ -1,8 +1,14 @@
 pipeline {
-    agent {
+    /*
+     * Jenkins Pipeline for deploying an EKS cluster using Terraform
+     * This pipeline includes stages for initialization, validation, planning, security scanning,
+     * manual approval, and deployment.
+     */
+   /* agent {
         label 'terraform-aws'
-    }
-
+    } */
+    agent any   
+   
     environment {
         AWS_REGION             = 'us-west-2'
         TF_VERSION            = '1.5.0'
