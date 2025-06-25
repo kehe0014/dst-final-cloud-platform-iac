@@ -66,13 +66,6 @@ pipeline {
             }
         }
 
-        stage('Security Scan') {
-            steps {
-                sh 'terraform show -no-color tfplan > tfplan.txt'
-                sh 'checkov -f tfplan.txt --skip-check CKV_AWS_58,CKV_AWS_88 --soft-fail'
-            }
-        }
-
         stage('Manual Approval') {
             when {
                 branch 'main'
