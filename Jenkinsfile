@@ -10,7 +10,7 @@ pipeline {
     agent any   
    
     environment {
-        AWS_REGION             = 'us-west-2'
+        AWS_REGION             = 'us-west-3'
         TF_VERSION            = '1.5.0'
         TF_IN_AUTOMATION      = 'true'
         TF_INPUT              = 'false'
@@ -34,15 +34,8 @@ pipeline {
 
         stage('Terraform Init') {
             steps {
-                dir('modules/vpc') {
-                    sh 'terraform init -backend=false -no-color'
-                }
-                dir('modules/eks') {
-                    sh 'terraform init -backend=false -no-color'
-                }
-                dir('modules/iam') {
-                    sh 'terraform init -backend=false -no-color'
-                }
+                sh 'rm -rf .terraform .terraform.lock.hcl'
+               sh 'terraform init -upgrade'
             }
         }
 
