@@ -94,7 +94,7 @@ pipeline {
                 }
             }
         }
-
+    }
     post {
         always {
            // archiveArtifacts artifacts: '**/tfplan*', allowEmptyArchive: true
