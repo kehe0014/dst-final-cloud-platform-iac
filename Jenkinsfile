@@ -46,7 +46,7 @@ pipeline {
                 }
             }
         }
-
+/*
         stage('Terraform Validate') {
             steps {
                 script {
@@ -62,7 +62,7 @@ pipeline {
                 }
             }
         }
-
+*/
         stage('Terraform Plan') {
             steps {
                 withCredentials([[
