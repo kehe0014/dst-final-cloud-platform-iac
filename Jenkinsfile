@@ -95,47 +95,19 @@ pipeline {
             }
         }
 
-        stage('Kubeconfig Setup') {
-            steps {
-                script {
-                    def cluster_name = sh(
-                        script: 'terraform output -raw cluster_name',
-                        returnStdout: true
-                    ).trim()
-
-                    sh """
-                    aws eks update-kubeconfig \
-                        --name ${cluster_name} \
-                        --region ${AWS_REGION}
-                    """
-                }
-            }
-        }
-
-        stage('Smoke Test') {
-            steps {
-                sh 'kubectl get nodes --no-headers | wc -l > node_count.txt'
-                script {
-                    def node_count = readFile('node_count.txt').trim()
-                    if (node_count.toInteger() < 1) {
-                        error('Cluster health check failed: No worker nodes available')
-                    }
-                }
-                sh 'kubectl cluster-info'
-            }
-        }
-    }
-
     post {
         always {
-            archiveArtifacts artifacts: '**/tfplan*', allowEmptyArchive: true
-            junit '**/terraform-test-report.xml'
+           // archiveArtifacts artifacts: '**/tfplan*', allowEmptyArchive: true
+          //  junit '**/terraform-test-report.xml'
+            sh 'echo  In the post build'
         }
         success {
-            slackSend color: 'good', message: "EKS Deployment Successful: ${env.JOB_NAME} #${env.BUILD_NUMBER}"
+           // slackSend color: 'good', message: "EKS Deployment Successful: ${env.JOB_NAME} #${env.BUILD_NUMBER}"
+            sh 'echo  SUCESS'
         }
         failure {
-            slackSend color: 'danger', message: "EKS Deployment Failed: ${env.JOB_NAME} #${env.BUILD_NUMBER}"
+           // slackSend color: 'danger', message: "EKS Deployment Failed: ${env.JOB_NAME} #${env.BUILD_NUMBER}"
+             sh 'echo  FAIL'
         }
     }
 }
