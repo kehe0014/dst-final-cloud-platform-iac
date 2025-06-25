@@ -10,7 +10,7 @@ pipeline {
     agent any   
    
     environment {
-        AWS_REGION             = 'us-west-3'
+        AWS_REGION             = 'eu-west-3'
         TF_VERSION            = '1.5.0'
         TF_IN_AUTOMATION      = 'true'
         TF_INPUT              = 'false'
@@ -32,10 +32,34 @@ pipeline {
             }
         }
 
+
         stage('Terraform Init') {
             steps {
-                sh 'rm -rf .terraform .terraform.lock.hcl'
-               sh 'terraform init -upgrade'
+                dir('modules/vpc') {
+                    sh 'terraform init -backend=false -no-color'
+                }
+                dir('modules/eks') {
+                    sh 'terraform init -backend=false -no-color'
+                }
+                dir('modules/iam') {
+                    sh 'terraform init -backend=false -no-color'
+                }
+            }
+        }
+
+        stage('Terraform Validate') {
+            steps {
+                script {
+                    def dirs = findFiles(glob: 'modules/**/main.tf').collect {
+                        it.path.split('/')[1]
+                    }.unique()
+
+                    dirs.each { dir ->
+                        dir("modules/${dir}") {
+                            sh 'terraform validate -no-color'
+                        }
+                    }
+                }
             }
         }
 
