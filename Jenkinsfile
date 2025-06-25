@@ -46,23 +46,7 @@ pipeline {
                 }
             }
         }
-/*
-        stage('Terraform Validate') {
-            steps {
-                script {
-                    def dirs = findFiles(glob: 'modules/**/main.tf').collect {
-                        it.path.split('/')[1]
-                    }.unique()
-
-                    dirs.each { dir ->
-                        dir("modules/${dir}") {
-                            sh 'terraform validate -no-color'
-                        }
-                    }
-                }
-            }
-        }
-*/
+        
         stage('Terraform Plan') {
             steps {
                 withCredentials([[
