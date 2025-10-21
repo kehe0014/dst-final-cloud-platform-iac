@@ -1,10 +1,10 @@
 module "vpc" {
   source = "./modules/vpc"
-  
-  vpc_cidr             = var.vpc_cidr
-  public_subnet_cidrs  = var.public_subnet_cidrs
-  environment          = var.environment
-  tags                 = var.tags
+
+  vpc_cidr            = var.vpc_cidr
+  public_subnet_cidrs = var.public_subnet_cidrs
+  environment         = var.environment
+  tags                = var.tags
 }
 
 module "iam" {
@@ -23,8 +23,8 @@ module "eks" {
   environment     = var.environment
   tags            = var.tags
 
-  instance_types        = var.instance_types
-  node_group_min_size   = var.node_group_min_size
-  node_group_max_size   = var.node_group_max_size
+  instance_types          = var.instance_types
+  node_group_min_size     = var.node_group_min_size
+  node_group_max_size     = var.node_group_max_size
   node_group_desired_size = var.node_group_desired_size
 }
