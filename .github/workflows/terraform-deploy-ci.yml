@@ -93,7 +93,7 @@ jobs:
     - name: Wait for manual approval
       uses: trstringer/manual-approval@v1
       with:
-        secret: ${{ github.MANUAL_APPROVAL_TOKEN  }}
+        secret: ${{ secrets.MANUAL_APPROVAL_TOKEN  }}
         approvers: ${{ vars.TERRAFORM_APPROVERS || github.actor }}
         minimum-approvals: 1
         issue-title: "Approval required for Terraform Apply"
