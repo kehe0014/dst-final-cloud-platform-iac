@@ -1,31 +1,63 @@
-# Terraform files
-**/.terraform/*
+# Local Terraform directories
+**/.terraform/
+**/.terraform.*/
+
+# .tfstate files
 *.tfstate
 *.tfstate.*
+*.tfstate.backup
+
+# Crash log files
+crash.log
+crash.*.log
+terraform.tf.state.lock.info
+
+# Exclude all .tfstate files and .tfstate backup files
+*.tfstate
+*.tfstate.backup
+
+# Ignore archive files
+*.tar.gz
+*.zip
+
+# .tfvars files
 *.tfvars
-*.tfplan
-terraform.tfstate.lock.info
+*.tfvars.json
+
+# Ignore override files as they are usually used to override resources which are
+# managed by cloud, etc.
+override.tf
+override.tf.json
+*_override.tf
+*_override.tf.json
+
+# Include override files you do wish to add to version control using negated pattern
+# !example_override.tf
+
+# Lock file
 .terraform.lock.hcl
 
-# Local CLI configuration
+# CLI configuration files
 .terraformrc
 terraform.rc
 
+# Plan output
+*.plan
+*.tfplan
+tfplan
+
+# Core files
+*.core
+
 # IDE and editor files
-.idea/
 .vscode/
+.idea/
 *.swp
 *.swo
-*.swn
-*.swo
-*.bak
 *~
+*.sublime-*
 
-# Log files
-*.log
-*.tmp
-
-# OS generated files
+# OS-specific files
 .DS_Store
 .DS_Store?
 ._*
@@ -33,42 +65,137 @@ terraform.rc
 .Trashes
 ehthumbs.db
 Thumbs.db
+desktop.ini
 
-# Sensitive files
-**/override.tf
-**/override.tf.json
-**/*_override.tf
-**/*_override.tf.json
+# Log files
+*.log
+logs/
 
-# Local override files
-override.tf
-override.tf.json
-*_override.tf
-*_override.tf.json
+# Temporary files
+*.tmp
+*.temp
+tmp/
+temp/
+
+# Backup files
+*.bak
+*.backup
+
+# Kubernetes files
+kubeconfig
+kubeconfig_*
+*.kubeconfig
+.kube/
+
+# AWS CLI and credentials (should never be in version control)
+.aws/
+*.pem
+*.key
+*.cert
+*.crt
+*.p12
+
+# Environment files with secrets
+.env
+*.env
+.secret
+.secrets
+
+# SSH keys
+id_rsa
+id_rsa.pub
+id_ed25519
+id_ed25519.pub
 
 # Terragrunt cache
 .terragrunt-cache/
+terragrunt.hcl
 
-# Kubernetes files (if any)
-kubeconfig_*
-*.kubeconfig
+# Build artifacts
+build/
+dist/
+pkg/
 
-# AWS CLI files (if used)
-**/.aws/config
-**/.aws/credentials
+# Package files
+*.tar.gz
+*.zip
 
-# Environment files
-.env
-*.env
+# Documentation
+*.terraform.docs.yml
 
-# Plan output files
-*.plan
-tfplan
-plan.out
+# Test and example directories
+examples/
+test/
+tests/
 
-# Lock files
-*.lock
-*.lock.hcl
+# YAML lint configuration
+.yamllint
 
-# Crash log files
-crash.log
+# Makefile artifacts (if any specific to your project)
+*.done
+*.built
+
+# Helm charts (if using helm provider)
+charts/
+*.tgz
+
+# Local override files for development
+local.tf
+local_*.tf
+
+# Uncommitted files that might be generated during development
+.cache/
+.output/
+
+# Git related (in case someone ignores the root .git)
+.git/
+
+# CI/CD configuration (keep only the one you use)
+.jenkins/
+.gitlab-ci.yml
+.circleci/
+.travis.yml
+.github/workflows/*.backup
+
+# Python virtual environment (if using Python scripts)
+venv/
+.env/
+.venv/
+ENV/
+
+# Node.js (if using Node.js scripts)
+node_modules/
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+.lock-wscript
+
+# Go (if using Go scripts)
+bin/
+/pkg/
+
+# Ruby (if using Ruby scripts)
+/.bundle/
+/vendor/bundle
+
+# Compiled files
+*.so
+*.dylib
+*.a
+*.o
+*.obj
+
+# Executables
+*.exe
+*.out
+*.app
+
+# Specific to your project structure
+output/
+artifacts/
+downloads/
+
+# Local development overrides
+.devcontainer/
+aws/install
+aws/THIRD_PARTY_LICENSES
