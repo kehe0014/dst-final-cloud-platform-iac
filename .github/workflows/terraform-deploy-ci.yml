@@ -1,0 +1,164 @@
+name: Terraform EKS Deployment
+
+on:
+  push:
+    branches: [ main, develop ]
+  pull_request:
+    branches: [ main, develop ]
+
+env:
+  AWS_REGION: eu-west-3
+  TF_VERSION: 1.5.0
+  KUBE_VERSION: 1.28
+  TF_IN_AUTOMATION: true
+  TF_INPUT: false
+
+jobs:
+  terraform:
+    runs-on: ubuntu-latest
+    environment: production
+    
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v4
+
+    - name: Setup Terraform
+      uses: hashicorp/setup-terraform@v3
+      with:
+        terraform_version: ${{ env.TF_VERSION }}
+
+    - name: Configure AWS credentials
+      uses: aws-actions/configure-aws-credentials@v4
+      with:
+        aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
+        aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+        aws-region: ${{ env.AWS_REGION }}
+
+    - name: Setup kubectl
+      run: |
+        curl -LO "https://dl.k8s.io/release/$(curl -L -s https://dl.k8s.io/release/stable.txt)/bin/linux/amd64/kubectl"
+        sudo install -o root -g root -m 0755 kubectl /usr/local/bin/kubectl
+        kubectl version --client
+
+    - name: Check environment prerequisites
+      run: make check-env
+
+    - name: Checkout & Setup
+      run: make checkout-setup
+
+    - name: Terraform Init
+      run: make init
+
+    - name: Terraform Format Check
+      run: |
+        make fmt
+        git diff --exit-code || (echo "Terraform files need formatting. Run 'make fmt' locally and commit the changes." && exit 1)
+
+    - name: Terraform Validate
+      run: make validate
+
+    - name: Terraform Plan
+      run: make plan
+      id: plan
+
+    - name: Upload Terraform Plan
+      uses: actions/upload-artifact@v4
+      with:
+        name: terraform-plan
+        path: tfplan
+        retention-days: 1
+
+    - name: Create Plan Summary
+      run: |
+        PLAN_SUMMARY=$(terraform show -no-color tfplan | head -50)
+        echo "### 🚀 Terraform Plan Summary" >> $GITHUB_STEP_SUMMARY
+        echo '```' >> $GITHUB_STEP_SUMMARY
+        echo "$PLAN_SUMMARY" >> $GITHUB_STEP_SUMMARY
+        echo '```' >> $GITHUB_STEP_SUMMARY
+
+    - name: Wait for manual approval
+      uses: trstringer/manual-approval@v1
+      with:
+        secret: ${{ github.TOKEN }}
+        approvers: ${{ vars.TERRAFORM_APPROVERS || 'admin,maintainer' }}
+        minimum-approvals: 1
+        issue-title: "Approval required for Terraform Apply"
+        issue-body: |
+          ## Terraform Apply Approval Required
+          
+          A Terraform plan has been generated and is ready for application.
+          
+          **Environment:** production
+          **Region:** ${{ env.AWS_REGION }}
+          **Kubernetes Version:** ${{ env.KUBE_VERSION }}
+          
+          Please review the plan output above and approve if everything looks correct.
+          
+          **To approve:** Comment with `/approve`
+          **To deny:** Comment with `/deny`
+          
+          **Changes will be applied to production infrastructure!**
+      id: approval
+
+    - name: Download Terraform Plan
+      if: steps.approval.outputs.approved == 'true'
+      uses: actions/download-artifact@v4
+      with:
+        name: terraform-plan
+
+    - name: Terraform Apply
+      if: steps.approval.outputs.approved == 'true'
+      run: make apply
+
+    - name: Post Success
+      if: steps.approval.outputs.approved == 'true' && success()
+      run: |
+        make post-success
+        echo "### ✅ Deployment Successful" >> $GITHUB_STEP_SUMMARY
+        echo "Infrastructure deployment completed successfully!" >> $GITHUB_STEP_SUMMARY
+
+    - name: Post Failure
+      if: steps.approval.outputs.approved == 'true' && failure()
+      run: |
+        make post-failure
+        echo "### ❌ Deployment Failed" >> $GITHUB_STEP_SUMMARY
+        echo "Infrastructure deployment failed. Check the logs for details." >> $GITHUB_STEP_SUMMARY
+
+  destroy:
+    runs-on: ubuntu-latest
+    environment: production
+    if: github.event_name == 'workflow_dispatch' && github.event.inputs.confirm_destroy == 'true'
+    
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v4
+
+    - name: Setup Terraform
+      uses: hashicorp/setup-terraform@v3
+      with:
+        terraform_version: ${{ env.TF_VERSION }}
+
+    - name: Configure AWS credentials
+      uses: aws-actions/configure-aws-credentials@v4
+      with:
+        aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
+        aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+        aws-region: ${{ env.AWS_REGION }}
+
+    - name: Terraform Init
+      run: make init
+
+    - name: Destroy Infrastructure
+      run: |
+        echo "yes" | make destroy
+
+  cleanup:
+    runs-on: ubuntu-latest
+    if: always()
+    
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v4
+
+    - name: Clean up generated files
+      run: make clean
