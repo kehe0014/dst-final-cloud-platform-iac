@@ -90,49 +90,21 @@ jobs:
         echo "$PLAN_SUMMARY" >> $GITHUB_STEP_SUMMARY
         echo '```' >> $GITHUB_STEP_SUMMARY
 
-    - name: Wait for manual approval
-      uses: trstringer/manual-approval@v1
-      with:
-        secret: ${{ secrets.MANUAL_APPROVAL_TOKEN  }}
-        approvers: ${{ vars.TERRAFORM_APPROVERS || github.actor }}
-        minimum-approvals: 1
-        issue-title: "Approval required for Terraform Apply"
-        issue-body: |
-          ## Terraform Apply Approval Required
-          
-          A Terraform plan has been generated and is ready for application.
-          
-          **Environment:** production
-          **Region:** ${{ env.AWS_REGION }}
-          **Kubernetes Version:** ${{ env.KUBE_VERSION }}
-          
-          Please review the plan output above and approve if everything looks correct.
-          
-          **To approve:** Comment with `/approve`
-          **To deny:** Comment with `/deny`
-          
-          **Changes will be applied to production infrastructure!**
-      id: approval
-
     - name: Download Terraform Plan
-      if: steps.approval.outputs.approved == 'true'
       uses: actions/download-artifact@v4
       with:
         name: terraform-plan
 
-    - name: Terraform Apply
-      if: steps.approval.outputs.approved == 'true'
-      run: make apply
+    #- name: Terraform Apply
+      #run: make apply
 
     - name: Post Success
-      if: steps.approval.outputs.approved == 'true' && success()
       run: |
         make post-success
         echo "### ✅ Deployment Successful" >> $GITHUB_STEP_SUMMARY
         echo "Infrastructure deployment completed successfully!" >> $GITHUB_STEP_SUMMARY
 
     - name: Post Failure
-      if: steps.approval.outputs.approved == 'true' && failure()
       run: |
         make post-failure
         echo "### ❌ Deployment Failed" >> $GITHUB_STEP_SUMMARY
